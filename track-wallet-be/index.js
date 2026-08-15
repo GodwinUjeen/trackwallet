@@ -13,9 +13,26 @@ const importRoutes = require('./src/routes/import');
 
 const app = express();
 
+const allowedOrigins = (process.env.CORS_ORIGIN || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
 app.use(
     cors({
-        origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
+        origin: (origin, callback) => {
+            // Allow requests without an Origin header
+            // (curl, server-to-server requests, etc.)
+            if (!origin) {
+                return callback(null, true);
+            }
+
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+
+            return callback(new Error('Not allowed by CORS'));
+        },
         credentials: true,
     })
 );
